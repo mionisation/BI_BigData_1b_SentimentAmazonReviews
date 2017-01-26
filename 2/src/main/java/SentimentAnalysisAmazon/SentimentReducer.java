@@ -5,7 +5,7 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-public class AvgReducer  extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
+public class SentimentReducer  extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
     @Override
     public void reduce(Text word, Iterable<DoubleWritable> counts, Context context)
         throws IOException, InterruptedException {
