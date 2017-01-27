@@ -5,17 +5,18 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-public class SentimentReducer  extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
+public class SentimentReducer  extends Reducer<Text, DoubleArrayWritable, Text, DoubleWritable> {
     @Override
-    public void reduce(Text word, Iterable<DoubleWritable> counts, Context context)
+    public void reduce(Text word, Iterable<DoubleArrayWritable> countsList, Context context)
         throws IOException, InterruptedException {
-      double sum = 0;
-      double amount = 0; 
-      for (DoubleWritable count : counts) {
-        sum += count.get();
-        amount++;
+      double pos = 0.0;
+      double neg = 0.0; 
+      for (DoubleArrayWritable counts : countsList) {
+    	  pos += ((DoubleWritable)(counts.get())[0]).get();
+    	  neg += ((DoubleWritable)(counts.get())[1]).get();
+          
       }
-     sum /= amount;
-      context.write(word, new DoubleWritable(sum));
+     double result = (pos - neg) / (pos + neg);
+      context.write(word, new DoubleWritable(result));
     }
   }

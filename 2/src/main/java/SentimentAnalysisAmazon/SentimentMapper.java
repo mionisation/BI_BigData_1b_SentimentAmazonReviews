@@ -30,6 +30,7 @@ public class SentimentMapper extends Mapper<LongWritable, Text, Text, ArrayWrita
 	
 	// Parse the positive words to match and capture during Map phase.
 	private Set<String> parseWords(URI wordsURI) {
+		//TODO Treeset? optimize everyhting!
 		Set<String> words = new HashSet<String>();
 		try {
 			BufferedReader fis = new BufferedReader(new FileReader(
@@ -40,7 +41,7 @@ public class SentimentMapper extends Mapper<LongWritable, Text, Text, ArrayWrita
 			}
 		} catch (IOException ioe) {
 			System.err.println("Caught exception parsing cached file '"
-					+ goodWords + "' : " + StringUtils.stringifyException(ioe));
+					+ words + "' : " + StringUtils.stringifyException(ioe));
 		}
 		return words;
 	}
@@ -62,7 +63,11 @@ public class SentimentMapper extends Mapper<LongWritable, Text, Text, ArrayWrita
     }
     
     public double getOccurrences(Set<String> wordList, String text) {
-    	//TODO implement
-    	return 0.0;
+    	double count = 0.0;
+    	for (String word : text.replace(",", "").split(" ")) {
+    		if(wordList.contains(word))
+    			count++;
+    	}
+    	return count;
     }
   }
