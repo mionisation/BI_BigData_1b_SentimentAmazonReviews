@@ -13,6 +13,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.util.StringUtils;
+import org.json.JSONObject;
 
 
 public class SentimentMapper extends Mapper<LongWritable, Text, Text, ArrayWritable> {   
@@ -46,15 +47,22 @@ public class SentimentMapper extends Mapper<LongWritable, Text, Text, ArrayWrita
 	
     public void map(LongWritable offset, Text lineText, Context context)
         throws IOException, InterruptedException {
-      String line = lineText.toString();
-      line = line.toLowerCase();
-      //get json product name, add composite writeable
-      
-      String[] prArr = line.split(",");
-      String product = prArr[1].trim();
-      String rating = prArr[2].trim();
-      DoubleArrayWritable aw = new DoubleArrayWritable();
-      //TODO fill values in array
-      context.write(new Text(product), aw);
+      JSONObject js = new JSONObject(lineText.toString());
+      //from json: get product name and reviews
+      String product = (String) js.get("asin");
+      double goodWordCount = getOccurrences(goodWords, (String)js.get("reviewText")) ;
+      double badWordCount = getOccurrences(badWords, (String)js.get("reviewText")) ;
+      goodWordCount += getOccurrences(goodWords, (String)js.get("summary")) ;
+      badWordCount += getOccurrences(badWords, (String)js.get("summary")) ;
+      //put in array to pass to reduce function
+      DoubleWritable[] dw = {new DoubleWritable(goodWordCount), new DoubleWritable(badWordCount)};
+      DoubleArrayWritable daw = new DoubleArrayWritable();
+      daw.set(dw);
+      context.write(new Text(product), daw);
+    }
+    
+    public double getOccurrences(Set<String> wordList, String text) {
+    	//TODO implement
+    	return 0.0;
     }
   }
