@@ -10,6 +10,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
 
 public class SentimentDriver extends Configured implements Tool {
 
@@ -24,13 +25,19 @@ public class SentimentDriver extends Configured implements Tool {
     Job job = Job.getInstance(getConf(), "sentimentcalculator");
     job.setJarByClass(this.getClass());
     //add positive and negative words
-    job.addCacheFile(new Path("/pos-words.txt").toUri());
-    job.addCacheFile(new Path("/neg-words.txt").toUri());
+    ClassLoader classLoader = this.getClass().getClassLoader();
+    
+    job.addCacheFile(classLoader.getResource("pos-words.txt").toURI());
+    job.addCacheFile(classLoader.getResource("neg-words.txt").toURI());
+    job.addCacheFile(classLoader.getResource("json-20160810.jar").toURI());
+
     // Use TextInputFormat, the default unless job.setInputFormatClass is used
     FileInputFormat.addInputPath(job, new Path(args[0]));
     FileOutputFormat.setOutputPath(job, new Path(args[1]));
     job.setMapperClass(SentimentMapper.class);
     job.setReducerClass(SentimentReducer.class);
+    job.setMapOutputKeyClass(Text.class);
+    job.setMapOutputValueClass(DoubleArrayWritable.class);
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(DoubleWritable.class);
     return job.waitForCompletion(true) ? 0 : 1;
