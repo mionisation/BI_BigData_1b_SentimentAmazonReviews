@@ -28,9 +28,10 @@ public class SentimentMapper extends Mapper<LongWritable, Text, Text, ArrayWrita
 		badWords = parseWords(localPaths[1]);
 	}
 	
-	// Parse the positive words to match and capture during Map phase.
+	/** 
+	 * Parse the positive words to match and capture during Map phase.
+	 */
 	private Set<String> parseWords(URI wordsURI) {
-		//TODO Treeset? optimize everyhting!
 		Set<String> words = new HashSet<String>();
 		try {
 			BufferedReader fis = new BufferedReader(new FileReader(
@@ -46,6 +47,11 @@ public class SentimentMapper extends Mapper<LongWritable, Text, Text, ArrayWrita
 		return words;
 	}
 	
+	/**
+	 * Use JSON properties of the line.
+	 * For each line both the review text and the summary is
+	 * analyzed, meaning that the occurrences of bad and good words are counted.
+	 */
     public void map(LongWritable offset, Text lineText, Context context)
         throws IOException, InterruptedException {
       JSONObject js = new JSONObject(lineText.toString());
@@ -62,7 +68,15 @@ public class SentimentMapper extends Mapper<LongWritable, Text, Text, ArrayWrita
       context.write(new Text(product), daw);
     }
     
-    public double getOccurrences(Set<String> wordList, String text) {
+    /**
+     * Returns the number of occurrences on any word of the
+     * wordlist that is in the text. 
+     * @param wordList a set of strings representing either positive or negative words
+     * @param text a particular line of text
+     * @return the number how many words of the text occur in the provided list of
+     * (positive or negative) words
+     */
+    private double getOccurrences(Set<String> wordList, String text) {
     	double count = 0.0;
     	for (String word : text.replace(",", "").split(" ")) {
     		if(wordList.contains(word))
